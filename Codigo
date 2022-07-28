@@ -40,7 +40,12 @@ if conectaWifi ("FAMILIA SIERRA ETB", "Pedrocoral1976"):
     print ("Conexión exitosa!")
     print('Datos de la red (IP/netmask/gw/DNS):', miRed.ifconfig())
       
-    
+if conectaWifi ("FAMILIA SIERRA ETB", "Pedrocoral1976"):
+
+    print ("Conexión exitosa!")
+    print('Datos de la red (IP/netmask/gw/DNS):', miRed.ifconfig())
+      
+    url = "https://maker.ifttt.com/trigger/Evento sensor de movimiento/with/key/bZz2e2Fr1mE5CGNfBzniqt"    
  
 else:
        print ("Imposible conectar")
