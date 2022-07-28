@@ -1,0 +1,136 @@
+import camera
+from time import sleep
+import machine
+#Pin del led de flash
+led = machine.Pin(21, machine.Pin.OUT)
+foto=1
+from machine import Pin
+from hcsr04 import HCSR04
+from time import sleep
+from machine import PWM
+import time
+import network, time
+from machine import Pin
+
+medidor = HCSR04 (trigger_pin = 4, echo_pin = 5)
+ledRojo  =     Pin(12,Pin.OUT)
+ledVerde =     Pin(27,Pin.OUT)
+ledAzul  =     Pin(26,Pin.OUT)
+Alarma   =     PWM(Pin(19, Pin.OUT))
+pir = Pin(15, Pin.IN, Pin.PULL_DOWN)# pulsador conectado a 3.3 vol
+
+#Def Wifi 
+def conectaWifi (red, password):
+      global miRed
+      miRed = network.WLAN(network.STA_IF)     
+      if not miRed.isconnected():              #Si no está conectado…
+          miRed.active(True)                   #activa la interface
+          miRed.connect(red, password)         #Intenta conectar con la red
+          print('Conectando a la red', red +"…")
+          timeout = time.time ()
+          while not miRed.isconnected():           #Mientras no se conecte..
+              if (time.ticks_diff (time.time (), timeout) > 10):
+                  return False
+      return True
+
+
+
+if conectaWifi ("FAMILIA SIERRA ETB", "Pedrocoral1976"):
+
+    print ("Conexión exitosa!")
+    print('Datos de la red (IP/netmask/gw/DNS):', miRed.ifconfig())
+      
+    
+ 
+else:
+       print ("Imposible conectar")
+       miRed.active (False)
+while (True):
+    nombre = "Cap"+str(foto)+".jpg"
+    print (nombre)
+    
+    try:
+        camera.init(0, format=camera.JPEG, fb_location=camera.PSRAM)
+        
+        #Establece el brillo
+        camera.brightness(-1)
+        
+        #Orientacion normal
+        camera.flip(0)
+        #Orientación normal
+        camera.mirror (0)
+        
+        #Resolución
+        camera.framesize(camera.FRAME_XGA)
+        #contraste
+        camera.contrast(2)
+        
+        #saturacion
+        camera.saturation (-2)
+               
+        #calidad
+        camera.quality(10)
+        
+        # special effects
+        camera.speffect(camera.EFFECT_NONE)
+         
+        # white balance
+        camera.whitebalance(camera.WB_NONE)
+        
+        #Enciende flash
+        #led.value(1)
+        sleep (0.5)
+        
+        #Captura la imagen
+        img = camera.capture()
+        print ("Tamaño=",len(img))
+        
+        
+        #Apaga flash
+        led.value(0)
+        
+        #desactivar cámara
+        camera.deinit ()
+       
+        #Guardar la imagen en el sistema de archivos
+        imgFile = open(nombre, "wb")
+        imgFile.write(img)
+        imgFile.close()
+        
+        foto+=1
+        
+        sleep (10)
+        
+    except Exception as err:
+    
+        print ("Error= "+str (err))
+        sleep (2)
+        # Def del medidos de distancia  medidor de distancia y buzzer 
+def leds(a,b,c):
+  ledRojo(not a)
+  ledVerde(not b)
+  ledAzul(not c)
+
+while (True):
+    try:
+        distancia = medidor.distance_cm ()
+        print ("Distancia = ", distancia)
+        if distancia >= 100:
+            leds(0,255,0); print("Peligro");time.sleep(2)
+        elif distancia >= 50:
+            leds(255,255,0); print("Alguien se encuentra cerca");time.sleep(2); Alarma(freq=600, duty=520)
+    except:
+        print ("Error!")
+while True:
+  estado = pir.value()
+  if estado ==0:
+    print("No hay nadie")
+    led.off()
+    ledA.on()
+    utime.sleep_ms(1000)
+  else:
+    print("Hay alguien")
+    led.on()
+    ledA.off()
+    utime.sleep_ms(1000)
+        
